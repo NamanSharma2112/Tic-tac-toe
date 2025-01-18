@@ -8,9 +8,8 @@ function Square({value, onSquareClick}) {
   );
 }
 
-export default function Board() {
-  const [xIsNext, setXIsNext] = useState(true);
-  const [squares, setSquares] = useState(Array(9).fill(null));
+  function Board({xIsNext, squares, onPlay}) {
+  
 
   function handleClick(i) {
     if (calculateWinner(squares) || squares[i]) {
@@ -22,16 +21,16 @@ export default function Board() {
     } else {
       nextSquares[i] = 'O';
     }
-    setSquares(nextSquares);
-    setXIsNext(!xIsNext);
+    onPlay(nextSquares); 
+    
   }
 
   const winner = calculateWinner(squares);
   let status;
   if (winner) {
     status = 'Winner: ' + winner;
-  } else {
-    status = 'Next player: ' + (xIsNext ? 'X' : 'O');
+  } else{
+    status = 'Next player: ' + (xIsNext ? 'X' : 'O')
   }
 
   return (
@@ -53,6 +52,50 @@ export default function Board() {
         <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
       </div>
     </>
+  );
+}
+
+export default function Game(){
+  const[history,setHistory] = useState([Array(9).fill(null)]);
+  const [currentMove, setCurrentMove] = useState(0);
+  const xIsNext = currentMove % 2 ===0 
+  
+  const currentSquares = history[currentMove];
+
+  function handlePlay(nextSquares){
+    const nextHistory =[...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length -1);
+    
+    
+  }
+  function jumpTo(nextMove){
+    setCurrentMove(nextMove);
+
+
+  }
+  const moves = history.map((squares, move) =>{
+    let discription;
+    if (move > 0){
+      discription = 'Go to move #' + move;
+    } else {
+      discription = 'Go to Game start';
+    }
+    return (
+      <li key={move}>
+        <buttton onClick={() => jumpTo(move)}>{discription}</buttton>
+      </li>
+    )
+  })
+  return (
+    <div className='game' style={{display:'flex', justifyContent:'center', alignItems:'center' }}>
+      <div className='game-board'>
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className='game-info' style={{display:'flex', justifyContent:'center', alignItems:'center'}} >
+        <ol>{moves}</ol>
+      </div>
+    </div>
   );
 }
 
